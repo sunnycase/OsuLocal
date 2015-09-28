@@ -4,6 +4,7 @@ configuration: Debug
 platform: x86
 environment:
   AppxPackage: false
+  GenerateAppxPackageOnBuild: false
 nuget:
   project_feed: true
 before_build:
@@ -42,4 +43,4 @@ before_build:
 
     $env:Platform = $currentPlatform
 build:
-  verbosity: normal
+  verbosity: minimal
