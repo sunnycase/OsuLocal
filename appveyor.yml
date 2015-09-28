@@ -42,4 +42,4 @@ before_build:
 
     $env:Platform = $currentPlatform
 build:
-  verbosity: minimal
+  verbosity: normal
