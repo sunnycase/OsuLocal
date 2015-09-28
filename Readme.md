@@ -1,5 +1,7 @@
 ## Osu Local ##
 
+[![AppVeyor](https://ci.appveyor.com/api/projects/status/rbgb2d0kf18ktn4v?svg=true)](https://ci.appveyor.com/project/sunnycase/osulocal)
+
 **Osu Local** 是一款 Osu 离线播放器。你可以在不启动 Osu 的情况下播放谱面，即使在 Osu 不支持的平台也没有问题。
 
 ### 项目状态 ###
