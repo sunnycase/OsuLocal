@@ -156,6 +156,9 @@ void BeatmapReader::ReadLine(Beatmap^ beatmap, std::wstring&& line)
 	case ReadingContext::Difficulty:
 		ReadDifficultySection(beatmap, std::move(line));
 		break;
+	case ReadingContext::TimingPoints:
+		ReadTimingPointsSection(beatmap, std::move(line));
+		break;
 	default:
 		break;
 	}
@@ -192,12 +195,19 @@ void BeatmapReader::ReadSection(Beatmap^ beatmap, std::wstring&& line)
 				context = ReadingContext::Difficulty;
 				map->Difficulty = ref new DifficultySection();
 			}
+		},
+		{ L"[TimingPoints]", [](ReadingContext& context, Beatmap^ map) {
+				context = ReadingContext::TimingPoints;
+				map->internalTimingPoints = ref new Collections::Vector<TimingPoint^>();
+			}
 		}
 	};
 
 	auto it = logics.find(line);
 	if (it != logics.end())
 		it->second(readingContext, beatmap);
+	else
+		readingContext = ReadingContext::FindSection;
 }
 
 std::wstring trim(const std::wstring& str)
@@ -321,7 +331,7 @@ void BeatmapReader::ReadMetadataSection(Beatmap^ beatmap, std::wstring && line)
 					{
 						tags->Append(ref new String(tag.c_str(), tag.length()));
 					});
-					section->Tags = tags;
+					section->Tags = tags->GetView();
 				}
 			},
 			{ L"BeatmapID", [](MetadataSection^ section, std::wstring&& value) {
@@ -383,4 +393,74 @@ void BeatmapReader::ReadDifficultySection(Beatmap^ beatmap, std::wstring && line
 		if (it != logics.end())
 			it->second(beatmap->Difficulty, std::move(value));
 	}
+}
+
+void BeatmapReader::ReadTimingPointsSection(Beatmap^ beatmap, std::wstring && line)
+{
+	if (line.front() == '[')
+		return ReadSection(beatmap, std::move(line));
+
+	enum State
+	{
+		Offset,
+		MPB,
+		Meter,
+		SampleType,
+		SampleSet,
+		Volume,
+		Inherited,
+		KiaiMode,
+		End
+	} state = Offset;
+
+	auto timingPoint = ref new TimingPoint();
+	std::wistringstream ss(line);
+	while (state != End)
+	{
+		int iValue;
+		double dValue;
+		bool bValue;
+
+		switch (state)
+		{
+		case Offset:
+			ss >> iValue;
+			timingPoint->Offset = MSToTimeSpan(iValue);
+			break;
+		case MPB:
+			ss >> dValue;
+			timingPoint->MillisecondsPerBeat = dValue;
+			break;
+		case Meter:
+			ss >> iValue;
+			timingPoint->Meter = iValue;
+			break;
+		case SampleType:
+			ss >> iValue;
+			timingPoint->SampleType = iValue;
+			break;
+		case SampleSet:
+			ss >> iValue;
+			timingPoint->SampleSet = iValue;
+			break;
+		case Volume:
+			ss >> iValue;
+			timingPoint->Volume = iValue;
+			break;
+		case Inherited:
+			ss >> bValue;
+			timingPoint->Inherited = bValue;
+			break;
+		case KiaiMode:
+			ss >> bValue;
+			timingPoint->KiaiMode = bValue;
+			break;
+		default:
+			break;
+		}
+		state = static_cast<State>(state + 1);
+
+		wchar_t splitter; ss >> splitter;
+	}
+	beatmap->internalTimingPoints->Append(timingPoint);
 }

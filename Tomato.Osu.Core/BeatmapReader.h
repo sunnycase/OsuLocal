@@ -16,7 +16,8 @@ enum class ReadingContext
 	General,
 	Editor,
 	Metadata,
-	Difficulty
+	Difficulty,
+	TimingPoints
 };
 
 ///<summary>Beatmap ¶ÁÈ¡Æ÷</summary>
@@ -37,6 +38,7 @@ private:
 	void ReadGeneralSection(Beatmap^ beatmap, std::wstring&& line);
 	void ReadMetadataSection(Beatmap^ beatmap, std::wstring&& line);
 	void ReadDifficultySection(Beatmap^ beatmap, std::wstring&& line);
+	void ReadTimingPointsSection(Beatmap^ beatmap, std::wstring&& line);
 private:
 	ReadingContext readingContext;
 };

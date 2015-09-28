@@ -150,10 +150,10 @@ public:
 	}
 
 	///<summary>A collection of words describing the song. Tags are searchable in both the online listings and in the song selection menu. </summary>
-	property Windows::Foundation::Collections::IVector<Platform::String^>^ Tags
+	property Windows::Foundation::Collections::IVectorView<Platform::String^>^ Tags
 	{
-		Windows::Foundation::Collections::IVector<Platform::String^>^ get() { return tags; }
-	internal: void set(Windows::Foundation::Collections::IVector<Platform::String^>^ value) { tags = value; }
+		Windows::Foundation::Collections::IVectorView<Platform::String^>^ get() { return tags; }
+	internal: void set(Windows::Foundation::Collections::IVectorView<Platform::String^>^ value) { tags = value; }
 	}
 
 	///<summary>The ID of the single beatmap. </summary>
@@ -177,7 +177,7 @@ private:
 	Platform::String^ creator;
 	Platform::String^ version;
 	Platform::String^ source;
-	Windows::Foundation::Collections::IVector<Platform::String^>^ tags;
+	Windows::Foundation::Collections::IVectorView<Platform::String^>^ tags;
 	int beatmapId;
 	int beatmapSetId;
 };
@@ -235,6 +235,78 @@ private:
 	double sliderTickRate = 1.0;
 };
 
+///<summary>TimingPoint</summary>
+public ref class TimingPoint sealed
+{
+public:
+	///<summary>Defines when the Timing Point takes effect. </summary>
+	property Windows::Foundation::TimeSpan Offset
+	{
+		Windows::Foundation::TimeSpan get() { return offset; }
+	internal: void set(Windows::Foundation::TimeSpan value) { offset = value; }
+	}
+
+	///<summary>Defines the beats per minute of the song. </summary>
+	property double MillisecondsPerBeat
+	{
+		double get() { return millisecondsPerBeat; }
+	internal: void set(double value) { millisecondsPerBeat = value; }
+	}
+
+	///<summary>Defines the number of beats in a measure. </summary>
+	property int Meter
+	{
+		int get() { return meter; }
+	internal: void set(int value) { meter = value; }
+	}
+
+	///<summary>Defines the type of hit sound samples that are used. </summary>
+	property int SampleType
+	{
+		int get() { return sampleType; }
+	internal: void set(int value) { sampleType = value; }
+	}
+
+	///<summary>Defines the set of hit sounds that are used. </summary>
+	property int SampleSet
+	{
+		int get() { return sampleSet; }
+	internal: void set(int value) { sampleSet = value; }
+	}
+
+	///<summary>A value from 0 - 100 that defines the volume of hit sounds. </summary>
+	property int Volume
+	{
+		int get() { return volume; }
+	internal: void set(int value) { volume = value; }
+	}
+
+	///<summary>Defines whether or not the Timing Point is an inherited Timing Point. </summary>
+	property bool Inherited
+	{
+		bool get() { return inherited; }
+	internal: void set(bool value) { inherited = value; }
+	}
+
+	///<summary>Defines whether or not Kiai Time effects are active. </summary>
+	property bool KiaiMode
+	{
+		bool get() { return kiaiMode; }
+	internal: void set(bool value) { kiaiMode = value; }
+	}
+private:
+	Windows::Foundation::TimeSpan offset;
+	double millisecondsPerBeat;
+	int meter;
+	int sampleType;
+	int sampleSet;
+	int volume;
+	bool inherited;
+	bool kiaiMode;
+};
+
+typedef Windows::Foundation::Collections::IVectorView<TimingPoint^> TimingPointsSection;
+
 ///<summary>Beatmap</summary>
 public ref class Beatmap sealed
 {
@@ -266,11 +338,28 @@ public:
 		DifficultySection^ get() { return difficulty; }
 	internal: void set(DifficultySection^ value) { difficulty = value; }
 	}
+
+	///<summary>获取 TimingPoints 小节</summary>
+	property TimingPointsSection^ TimingPoints
+	{
+		TimingPointsSection^ get() 
+		{
+			if (!timingPoints && internalTimingPoints)
+				timingPoints = internalTimingPoints->GetView();
+			return timingPoints;
+		}
+	internal: void set(TimingPointsSection^ value) { timingPoints = value; }
+	}
+
+
+internal:
+	Platform::Collections::Vector<TimingPoint^>^ internalTimingPoints;
 private:
 	float version;
 	GeneralSection^ general;
 	MetadataSection^ metadata;
 	DifficultySection^ difficulty;
+	TimingPointsSection^ timingPoints;
 };
 
 END_NS_OSU_CORE
